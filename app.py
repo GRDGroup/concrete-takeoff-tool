@@ -18,6 +18,7 @@ component = st.selectbox("Component Type", [
 length_ft = st.number_input("Length (ft)", min_value=0.0, value=0.0)
 height_ft = st.number_input("Height / Depth (ft)", min_value=0.0, value=0.0)
 thickness_in = st.number_input("Thickness (inches)", min_value=0.0, value=0.0)
+area_override = st.number_input("Square Footage Override (for slabs)", min_value=0.0, value=0.0)
 qty = st.number_input("Quantity (if applicable)", min_value=1, value=1)
 include_overage = st.checkbox("Apply 10% overage for structural / 5% for slabs", value=True)
 
@@ -56,13 +57,18 @@ if st.button("Calculate"):
     total_cost = 0.0
     total_sale = 0.0
     raw_total = 0.0
+    rock_volume_cy = 0.0
+    drain_fabric_lf = 0.0
+    drain_pipe_lf = 0.0
+
+    slab_area = area_override if area_override > 0 else length_ft * height_ft
 
     if component in ["Foundation Wall", "Interior Slab", "Garage Slab"]:
-        volume_cy = (length_ft * height_ft * thickness_ft) / 27
+        volume_cy = (slab_area * thickness_ft) / 27
         if include_overage:
             volume_cy *= 1.10 if component == "Foundation Wall" else 1.05
         if "Slab" in component:
-            rebar_lf = length_ft * height_ft * 0.25
+            rebar_lf = slab_area * 0.25
         else:
             h_bars = math.ceil(height_ft / 1) * length_ft
             v_bars = math.ceil(length_ft / 1.5) * height_ft
@@ -81,30 +87,30 @@ if st.button("Calculate"):
             volume_cy *= 1.10
 
     elif component == "XPS Insulation":
-        xps_sf = length_ft * height_ft
+        xps_sf = slab_area
         xps_price = 1.41
         raw_total = xps_sf * xps_price
         total_sale = raw_total * (1 + material_markup / 100)
 
     elif component == "French Drain":
-        drain_volume = (2 * 2 * length_ft) / 27 * 1.10
-        rock_cost = drain_volume * 33
+        rock_volume_cy = (2 * 2 * length_ft) / 27 * 1.10
+        drain_fabric_lf = length_ft
+        drain_pipe_lf = length_ft
+        rock_cost = rock_volume_cy * 33
         fabric_cost = (length_ft / 360) * 946
         pipe_cost = (length_ft / 100) * 177
         raw_total = rock_cost + fabric_cost + pipe_cost
         total_sale = raw_total * (1 + material_markup / 100)
-        volume_cy = round(drain_volume, 2)
         drain_cost = raw_total
 
     elif component == "Vapor Barrier":
-        vapor_area = length_ft * height_ft
+        vapor_area = slab_area
         raw_total = vapor_area * vapor_price
         total_sale = raw_total * (1 + material_markup / 100)
         vapor_cost = raw_total
 
     elif component == "Flatwork Finish":
-        flatwork_area = length_ft * height_ft
-        raw_total = flatwork_area * finish_rate
+        raw_total = slab_area * finish_rate
         total_sale = raw_total * (1 + material_markup / 100)
         finish_cost = raw_total
 
@@ -123,9 +129,12 @@ if st.button("Calculate"):
         "Height_ft": height_ft,
         "Thickness_in": thickness_in,
         "Quantity": qty,
-        "Concrete_CY": round(volume_cy, 2) if volume_cy > 0 else "-",
+        "Concrete_CY": round(volume_cy, 2) if component not in ["French Drain"] and volume_cy > 0 else "-",
         "Rebar_LF": round(rebar_lf, 2) if rebar_lf > 0 else "-",
         "XPS_SF": round(xps_sf, 2) if xps_sf > 0 else "-",
+        "Rock_CY": round(rock_volume_cy, 2) if component == "French Drain" else "-",
+        "Drain_Fabric_LF": round(drain_fabric_lf, 2) if component == "French Drain" else "-",
+        "Drain_Pipe_LF": round(drain_pipe_lf, 2) if component == "French Drain" else "-",
         "Vapor_Type": vapor_type if component == "Vapor Barrier" else "-",
         "Vapor_Cost": f"${vapor_cost:,.2f}" if vapor_cost else "-",
         "Finish_Cost": f"${finish_cost:,.2f}" if finish_cost else "-",
@@ -147,4 +156,5 @@ if "takeoff_data" in st.session_state and not st.session_state.takeoff_data.empt
     st.markdown("## Project Takeoff Summary")
     st.dataframe(st.session_state.takeoff_data)
     st.download_button("Download CSV", st.session_state.takeoff_data.to_csv(index=False), file_name="takeoff_dataset.csv")
+
 
