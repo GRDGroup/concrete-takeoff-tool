@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import math
+import matplotlib.pyplot as plt
 
 st.title("Concrete, Rebar, XPS, Drain & Finish Takeoff Tool")
 
@@ -21,6 +22,9 @@ thickness_in = st.number_input("Thickness (inches)", min_value=0.0, value=0.0)
 area_override = st.number_input("Square Footage Override (for slabs)", min_value=0.0, value=0.0)
 qty = st.number_input("Quantity (if applicable)", min_value=1, value=1)
 include_overage = st.checkbox("Apply 10% overage for structural / 5% for slabs", value=True)
+include_xps = st.checkbox("Include XPS Foam for Component", value=False)
+xps_r_value = st.selectbox("XPS R-Value", ["R-5", "R-10"])
+xps_price = 1.41 if xps_r_value == "R-10" else 0.71
 
 # Pricing Inputs
 st.markdown("### Pricing")
@@ -51,6 +55,7 @@ if st.button("Calculate"):
     volume_cy = 0.0
     rebar_lf = 0.0
     xps_sf = 0.0
+    xps_cost = 0.0
     drain_cost = 0.0
     vapor_cost = 0.0
     finish_cost = 0.0
@@ -73,6 +78,10 @@ if st.button("Calculate"):
             h_bars = math.ceil(height_ft / 1) * length_ft
             v_bars = math.ceil(length_ft / 1.5) * height_ft
             rebar_lf = h_bars + v_bars
+        if include_xps:
+            xps_sf = slab_area if "Slab" in component else length_ft * height_ft
+            xps_cost = xps_sf * xps_price
+            raw_total += xps_cost
 
     elif component == "Linear Footing":
         volume_cy = (length_ft * height_ft * thickness_ft) / 27
@@ -88,8 +97,8 @@ if st.button("Calculate"):
 
     elif component == "XPS Insulation":
         xps_sf = slab_area
-        xps_price = 1.41
-        raw_total = xps_sf * xps_price
+        xps_cost = xps_sf * xps_price
+        raw_total = xps_cost
         total_sale = raw_total * (1 + material_markup / 100)
 
     elif component == "French Drain":
@@ -117,7 +126,7 @@ if st.button("Calculate"):
     if component not in ["XPS Insulation", "French Drain", "Vapor Barrier", "Flatwork Finish"]:
         concrete_cost = volume_cy * concrete_price_per_cy
         rebar_cost_total = rebar_lf * rebar_cost if rebar_lf != 0 else 0
-        raw_total = concrete_cost + rebar_cost_total
+        raw_total += concrete_cost + rebar_cost_total
         total_sale = raw_total * (1 + material_markup / 100)
 
     st.markdown("### Results")
@@ -129,20 +138,22 @@ if st.button("Calculate"):
         "Height_ft": height_ft,
         "Thickness_in": thickness_in,
         "Quantity": qty,
-        "Concrete_CY": round(volume_cy, 2) if component not in ["French Drain"] and volume_cy > 0 else "-",
-        "Rebar_LF": round(rebar_lf, 2) if rebar_lf > 0 else "-",
-        "XPS_SF": round(xps_sf, 2) if xps_sf > 0 else "-",
-        "Rock_CY": round(rock_volume_cy, 2) if component == "French Drain" else "-",
-        "Drain_Fabric_LF": round(drain_fabric_lf, 2) if component == "French Drain" else "-",
-        "Drain_Pipe_LF": round(drain_pipe_lf, 2) if component == "French Drain" else "-",
+        "Concrete_CY": round(volume_cy, 2) if component not in ["French Drain"] and volume_cy > 0 else 0,
+        "Rebar_LF": round(rebar_lf, 2) if rebar_lf > 0 else 0,
+        "XPS_SF": round(xps_sf, 2) if xps_sf > 0 else 0,
+        "XPS_R_Value": xps_r_value if include_xps else "-",
+        "XPS_Cost": round(xps_cost, 2) if xps_cost > 0 else 0,
+        "Rock_CY": round(rock_volume_cy, 2) if component == "French Drain" else 0,
+        "Drain_Fabric_LF": round(drain_fabric_lf, 2) if component == "French Drain" else 0,
+        "Drain_Pipe_LF": round(drain_pipe_lf, 2) if component == "French Drain" else 0,
         "Vapor_Type": vapor_type if component == "Vapor Barrier" else "-",
-        "Vapor_Cost": f"${vapor_cost:,.2f}" if vapor_cost else "-",
-        "Finish_Cost": f"${finish_cost:,.2f}" if finish_cost else "-",
-        "Concrete_Cost": f"${concrete_cost:,.2f}" if component not in ["XPS Insulation", "French Drain", "Vapor Barrier", "Flatwork Finish"] else "-",
-        "Rebar_Cost": f"${rebar_cost_total:,.2f}" if rebar_lf > 0 else "-",
-        "Drain_Cost": f"${drain_cost:,.2f}" if component == "French Drain" else "-",
-        "Total_Cost": f"${raw_total:,.2f}",
-        "Sale_Price": f"${total_sale:,.2f}"
+        "Vapor_Cost": round(vapor_cost, 2) if vapor_cost else 0,
+        "Finish_Cost": round(finish_cost, 2) if finish_cost else 0,
+        "Concrete_Cost": round(concrete_cost, 2) if component not in ["XPS Insulation", "French Drain", "Vapor Barrier", "Flatwork Finish"] else 0,
+        "Rebar_Cost": round(rebar_cost_total, 2) if rebar_lf > 0 else 0,
+        "Drain_Cost": round(drain_cost, 2) if component == "French Drain" else 0,
+        "Total_Cost": round(raw_total, 2),
+        "Sale_Price": round(total_sale, 2)
     }])
     st.dataframe(result)
 
@@ -156,5 +167,32 @@ if "takeoff_data" in st.session_state and not st.session_state.takeoff_data.empt
     st.markdown("## Project Takeoff Summary")
     st.dataframe(st.session_state.takeoff_data)
     st.download_button("Download CSV", st.session_state.takeoff_data.to_csv(index=False), file_name="takeoff_dataset.csv")
+
+    # SUMMARY VISUALIZATION
+    st.markdown("### 📊 Project Summary Dashboard")
+    summary = st.session_state.takeoff_data
+    total_concrete = summary["Concrete_CY"].sum()
+    total_rebar = summary["Rebar_LF"].sum()
+    total_xps = summary["XPS_SF"].sum()
+    total_drain = summary["Rock_CY"].sum()
+    total_cost = summary["Total_Cost"].sum()
+    total_sale = summary["Sale_Price"].sum()
+    margin = total_sale - total_cost
+    margin_pct = (margin / total_sale * 100) if total_sale > 0 else 0
+
+    st.metric("Total Concrete (CY)", round(total_concrete, 2))
+    st.metric("Total Rebar (LF)", round(total_rebar, 2))
+    st.metric("Total XPS (SF)", round(total_xps, 2))
+    st.metric("Total Drain Rock (CY)", round(total_drain, 2))
+    st.metric("Total Cost", f"${round(total_cost, 2):,.2f}")
+    st.metric("Sale Price", f"${round(total_sale, 2):,.2f}")
+    st.metric("Margin", f"${round(margin, 2):,.2f} ({round(margin_pct, 1)}%)")
+
+    fig, ax = plt.subplots()
+    ax.bar(["Concrete", "Rebar", "XPS", "Drain"], [total_concrete, total_rebar, total_xps, total_drain], color=["#6699CC", "#FF9966", "#88CC88", "#CC6666"])
+    ax.set_ylabel("Total Quantity")
+    ax.set_title("Material Summary")
+    st.pyplot(fig)
+
 
 
