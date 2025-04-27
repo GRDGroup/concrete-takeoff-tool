@@ -22,7 +22,7 @@ if page == "Estimator":
     footing_num_bars = 2
     footing_rebar_size = "#4"
 
-    # Inputs
+    # User Inputs
     project_name = st.text_input("Project Name")
     estimator_name = st.text_input("Estimator")
 
@@ -45,15 +45,13 @@ if page == "Estimator":
     wall_spacing_in = st.selectbox("Wall Rebar Spacing (in)", [12, 18, 24])
     slab_spacing_in = st.selectbox("Slab Rebar Spacing (in)", [12, 18, 24])
 
-    # Rebar Detailed Inputs
+    # Detailed Rebar Inputs
     if component in ["Foundation Wall", "Interior Slab", "Garage Slab", "Exterior Flatwork"]:
         st.markdown("### Rebar Details")
-
         if component == "Foundation Wall":
             wall_horizontal_spacing = st.number_input("Horizontal Rebar Spacing for Wall (inches)", min_value=1, value=18)
             wall_vertical_spacing = st.number_input("Vertical Rebar Spacing for Wall (inches)", min_value=1, value=18)
             wall_rebar_size = st.selectbox("Wall Rebar Size", ["#3", "#4", "#5", "#6"])
-
         if component in ["Interior Slab", "Garage Slab", "Exterior Flatwork"]:
             slab_horizontal_spacing = st.number_input("Horizontal Rebar Spacing for Flatwork (inches)", min_value=1, value=24)
             slab_vertical_spacing = st.number_input("Vertical Rebar Spacing for Flatwork (inches)", min_value=1, value=24)
@@ -64,7 +62,7 @@ if page == "Estimator":
         footing_num_bars = st.number_input("Number of Bars in Footing", min_value=1, value=4)
         footing_rebar_size = st.selectbox("Footing Rebar Size", ["#3", "#4", "#5", "#6"])
 
-    # XPS Foam
+    # XPS Foam Inputs
     include_xps = st.checkbox("Include XPS Foam for Component", value=False)
     xps_r_value = st.selectbox("XPS R-Value", ["R-5", "R-10"])
     xps_price = 1.5 if xps_r_value == "R-5" else 3.0
@@ -94,6 +92,7 @@ if page == "Estimator":
     # Calculate Button
     if st.button("Calculate"):
         thickness_ft = thickness_in / 12 if thickness_in > 0 else 0.0
+
         volume_cy = 0.0
         rebar_lf = 0.0
         xps_sf = 0.0
@@ -108,133 +107,122 @@ if page == "Estimator":
         drain_fabric_lf = 0.0
         drain_pipe_lf = 0.0
 
-    slab_area = area_override if area_override > 0 else length_ft * height_ft
+        slab_area = area_override if area_override > 0 else length_ft * height_ft
 
-    # --- REBAR LENGTH CALCULATIONS ---
-    spacing_wall_h_ft = wall_horizontal_spacing / 12
-    spacing_wall_v_ft = wall_vertical_spacing / 12
-    spacing_slab_h_ft = slab_horizontal_spacing / 12
-    spacing_slab_v_ft = slab_vertical_spacing / 12
+        # Rebar calculations
+        spacing_wall_h_ft = wall_horizontal_spacing / 12
+        spacing_wall_v_ft = wall_vertical_spacing / 12
+        spacing_slab_h_ft = slab_horizontal_spacing / 12
+        spacing_slab_v_ft = slab_vertical_spacing / 12
 
-    rebar_weights = {
-        "#3": 0.376,
-        "#4": 0.668,
-        "#5": 1.043,
-        "#6": 1.502
-    }
+        if component == "Foundation Wall":
+            horiz_bars = math.ceil(length_ft / spacing_wall_h_ft)
+            vert_bars = math.ceil(height_ft / spacing_wall_v_ft)
+            total_bars = horiz_bars + vert_bars
+            overlap_ft = (total_bars * (24 / 12))
+            corner_overlap_ft = 4 * (18 / 12)
+            rebar_lf = (horiz_bars * length_ft) + (vert_bars * height_ft) + overlap_ft + corner_overlap_ft
 
-    if component == "Foundation Wall":
-        horiz_bars = math.ceil(length_ft / spacing_wall_h_ft)
-        vert_bars = math.ceil(height_ft / spacing_wall_v_ft)
-        total_bars = horiz_bars + vert_bars
-        overlap_ft = (total_bars * (24 / 12))
-        corner_overlap_ft = 4 * (18 / 12)
-        rebar_lf = (horiz_bars * length_ft) + (vert_bars * height_ft) + overlap_ft + corner_overlap_ft
+        elif component in ["Interior Slab", "Garage Slab", "Exterior Flatwork"]:
+            horiz_bars = math.ceil(length_ft / spacing_slab_h_ft)
+            vert_bars = math.ceil(height_ft / spacing_slab_v_ft)
+            total_bars = horiz_bars + vert_bars
+            overlap_ft = (total_bars * (24 / 12))
+            corner_overlap_ft = 4 * (18 / 12)
+            rebar_lf = (horiz_bars * length_ft) + (vert_bars * height_ft) + overlap_ft + corner_overlap_ft
 
-    elif component in ["Interior Slab", "Garage Slab", "Exterior Flatwork"]:
-        horiz_bars = math.ceil(length_ft / spacing_slab_h_ft)
-        vert_bars = math.ceil(height_ft / spacing_slab_v_ft)
-        total_bars = horiz_bars + vert_bars
-        overlap_ft = (total_bars * (24 / 12))
-        corner_overlap_ft = 4 * (18 / 12)
-        rebar_lf = (horiz_bars * length_ft) + (vert_bars * height_ft) + overlap_ft + corner_overlap_ft
+        elif component == "Linear Footing":
+            rebar_lf = footing_num_bars * length_ft
+            overlap_ft = footing_num_bars * (24 / 12)
+            rebar_lf += overlap_ft
 
-    elif component == "Linear Footing":
-        rebar_lf = footing_num_bars * length_ft
-        overlap_ft = footing_num_bars * (24 / 12)
-        rebar_lf += overlap_ft
+        # Concrete Volume Calcs
+        if component in ["Foundation Wall", "Interior Slab", "Garage Slab", "Exterior Flatwork"]:
+            volume_cy = (slab_area * thickness_ft) / 27
+            if include_overage:
+                volume_cy *= 1.10 if component == "Foundation Wall" else 1.05
+            if include_xps:
+                xps_sf = slab_area
+                xps_cost = xps_sf * xps_price
+                raw_total += xps_cost
 
-    else:
-        rebar_lf = 0
+        elif component == "Linear Footing":
+            volume_cy = (length_ft * height_ft * thickness_ft) / 27
+            if include_overage:
+                volume_cy *= 1.10
 
-    # --- VOLUME, COST, MATERIAL LOGIC ---
-    if component in ["Foundation Wall", "Interior Slab", "Garage Slab", "Exterior Flatwork"]:
-        volume_cy = (slab_area * thickness_ft) / 27
-        if include_overage:
-            volume_cy *= 1.10 if component == "Foundation Wall" else 1.05
-        if include_xps:
+        elif component == "Spread Footing":
+            volume_per = (length_ft * height_ft * thickness_ft) / 27
+            volume_cy = volume_per * qty
+            if include_overage:
+                volume_cy *= 1.10
+
+        elif component == "XPS Insulation":
             xps_sf = slab_area
             xps_cost = xps_sf * xps_price
-            raw_total += xps_cost
+            raw_total = xps_cost
+            total_sale = raw_total * (1 + material_markup / 100)
 
-    elif component == "Linear Footing":
-        volume_cy = (length_ft * height_ft * thickness_ft) / 27
-        if include_overage:
-            volume_cy *= 1.10
+        elif component == "French Drain":
+            rock_volume_cy = (2 * 2 * length_ft) / 27 * 1.10
+            drain_fabric_lf = length_ft
+            drain_pipe_lf = length_ft
+            rock_cost = rock_volume_cy * 33
+            fabric_cost = (length_ft / 360) * 946
+            pipe_cost = (length_ft / 100) * 177
+            raw_total = rock_cost + fabric_cost + pipe_cost
+            total_sale = raw_total * (1 + material_markup / 100)
+            drain_cost = raw_total
 
-    elif component == "Spread Footing":
-        volume_per = (length_ft * height_ft * thickness_ft) / 27
-        volume_cy = volume_per * qty
-        if include_overage:
-            volume_cy *= 1.10
+        elif component == "Vapor Barrier":
+            vapor_area = slab_area
+            raw_total = vapor_area * vapor_price
+            total_sale = raw_total * (1 + material_markup / 100)
+            vapor_cost = raw_total
 
-    elif component == "XPS Insulation":
-        xps_sf = slab_area
-        xps_cost = xps_sf * xps_price
-        raw_total = xps_cost
-        total_sale = raw_total * (1 + material_markup / 100)
+        elif component == "Flatwork Finish":
+            raw_total = slab_area * finish_rate
+            total_sale = raw_total * (1 + material_markup / 100)
+            finish_cost = raw_total
 
-    elif component == "French Drain":
-        rock_volume_cy = (2 * 2 * length_ft) / 27 * 1.10
-        drain_fabric_lf = length_ft
-        drain_pipe_lf = length_ft
-        rock_cost = rock_volume_cy * 33
-        fabric_cost = (length_ft / 360) * 946
-        pipe_cost = (length_ft / 100) * 177
-        raw_total = rock_cost + fabric_cost + pipe_cost
-        total_sale = raw_total * (1 + material_markup / 100)
-        drain_cost = raw_total
+        if component not in ["XPS Insulation", "French Drain", "Vapor Barrier", "Flatwork Finish"]:
+            concrete_cost = volume_cy * concrete_price_per_cy
+            rebar_cost_total = rebar_lf * rebar_cost if rebar_lf != 0 else 0
+            raw_total += concrete_cost + rebar_cost_total
+            total_sale = raw_total * (1 + material_markup / 100)
 
-    elif component == "Vapor Barrier":
-        vapor_area = slab_area
-        raw_total = vapor_area * vapor_price
-        total_sale = raw_total * (1 + material_markup / 100)
-        vapor_cost = raw_total
+        # Expansion Joint Rolls
+        expansion_joint_rolls = 0
+        expansion_joint_cost = 0
 
-    elif component == "Flatwork Finish":
-        raw_total = slab_area * finish_rate
-        total_sale = raw_total * (1 + material_markup / 100)
-        finish_cost = raw_total
+        if component in ["Interior Slab", "Garage Slab", "Exterior Flatwork"]:
+            perimeter_ft = (2 * length_ft) + (2 * height_ft)
+            expansion_joint_rolls = math.ceil(perimeter_ft / 45)
+            expansion_joint_cost = expansion_joint_rolls * 25
+            raw_total += expansion_joint_cost
 
-    if component not in ["XPS Insulation", "French Drain", "Vapor Barrier", "Flatwork Finish"]:
-        concrete_cost = volume_cy * concrete_price_per_cy
-        rebar_cost_total = rebar_lf * rebar_cost if rebar_lf != 0 else 0
-        raw_total += concrete_cost + rebar_cost_total
-        total_sale = raw_total * (1 + material_markup / 100)
+        # Output Results
+        st.markdown("### Results")
+        result = pd.DataFrame([{
+            "Project": project_name,
+            "Estimator": estimator_name,
+            "Component": component,
+            "Length_ft": length_ft,
+            "Height_ft": height_ft,
+            "Thickness_in": thickness_in,
+            "Quantity": qty,
+            "Concrete_CY": round(volume_cy, 2),
+            "Rebar_LF": round(rebar_lf, 2),
+            "XPS_SF": round(xps_sf, 2),
+            "XPS_Cost": round(xps_cost, 2),
+            "Total_Cost": round(raw_total, 2),
+            "Sale_Price": round(total_sale, 2)
+        }])
 
-    # --- EXPANSION JOINT FOAM LOGIC ---
-expansion_joint_rolls = 0
-expansion_joint_cost = 0
+        if "takeoff_data" not in st.session_state:
+            st.session_state.takeoff_data = pd.DataFrame()
 
-if component in ["Interior Slab", "Garage Slab", "Exterior Flatwork"]:
-    perimeter_ft = (2 * length_ft) + (2 * height_ft)
-    expansion_joint_rolls = math.ceil(perimeter_ft / 45)
-    expansion_joint_cost = expansion_joint_rolls * 25
-    raw_total += expansion_joint_cost
-
-    # --- RESULTS OUTPUT ---
-    st.markdown("### Results")
-    result = pd.DataFrame([{
-        "Project": project_name,
-        "Estimator": estimator_name,
-        "Component": component,
-        "Length_ft": length_ft,
-        "Height_ft": height_ft,
-        "Thickness_in": thickness_in,
-        "Quantity": qty,
-        "Concrete_CY": round(volume_cy, 2),
-        "Rebar_LF": round(rebar_lf, 2),
-        "XPS_SF": round(xps_sf, 2),
-        "XPS_Cost": round(xps_cost, 2),
-        "Total_Cost": round(raw_total, 2),
-        "Sale_Price": round(total_sale, 2)
-    }])
-
-    if "takeoff_data" not in st.session_state:
-        st.session_state.takeoff_data = pd.DataFrame()
-
-    st.session_state.takeoff_data = pd.concat([st.session_state.takeoff_data, result], ignore_index=True)
-
+        st.session_state.takeoff_data = pd.concat([st.session_state.takeoff_data, result], ignore_index=True)
 
 # --------------------------------
 # Materials Summary Page
@@ -260,7 +248,5 @@ if page == "Materials Summary":
         st.metric("Total Material Cost", f"${round(materials_cost,2):,}")
         st.metric("Total Sale Price", f"${round(sale_total,2):,}")
         st.metric("Profit Margin", f"${round(margin_amount,2):,} ({round(margin_percent,1)}%)")
-
-
 
 
