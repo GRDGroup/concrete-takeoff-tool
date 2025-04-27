@@ -208,10 +208,10 @@ expansion_joint_rolls = 0
 expansion_joint_cost = 0
 
     if component in ["Interior Slab", "Garage Slab", "Exterior Flatwork"]:
-        perimeter_ft = (2 * length_ft) + (2 * height_ft)
-        expansion_joint_rolls = math.ceil(perimeter_ft / 45)
-        expansion_joint_cost = expansion_joint_rolls * 25
-        raw_total += expansion_joint_cost
+            perimeter_ft = (2 * length_ft) + (2 * height_ft)
+            expansion_joint_rolls = math.ceil(perimeter_ft / 45)
+            expansion_joint_cost = expansion_joint_rolls * 25
+            raw_total += expansion_joint_cost
 
     # --- RESULTS OUTPUT ---
     st.markdown("### Results")
