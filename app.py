@@ -12,6 +12,16 @@ page = st.sidebar.selectbox("Select Page", ["Estimator", "Materials Summary"])
 if page == "Estimator":
     st.title("Concrete, Rebar, XPS, Drain & Finish Takeoff Tool")
 
+# Set defaults to prevent NameError
+wall_horizontal_spacing = 18
+wall_vertical_spacing = 18
+wall_rebar_size = "#4"
+slab_horizontal_spacing = 24
+slab_vertical_spacing = 24
+slab_rebar_size = "#4"
+footing_num_bars = 2
+footing_rebar_size = "#4"
+
     project_name = st.text_input("Project Name")
     estimator_name = st.text_input("Estimator")
 
