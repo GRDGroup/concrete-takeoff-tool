@@ -40,8 +40,8 @@ qty = st.number_input("Quantity (if applicable)", min_value=1, value=1)
 include_overage = st.checkbox("Apply 10% overage for structural / 5% for slabs", value=True)
 
     # Rebar Spacing
-        wall_spacing_in = st.selectbox("Wall Rebar Spacing (in)", [12, 18, 24])
-        slab_spacing_in = st.selectbox("Slab Rebar Spacing (in)", [12, 18, 24])
+    wall_spacing_in = st.selectbox("Wall Rebar Spacing (in)", [12, 18, 24])
+    slab_spacing_in = st.selectbox("Slab Rebar Spacing (in)", [12, 18, 24])
 
     # XPS Foam
         include_xps = st.checkbox("Include XPS Foam for Component", value=False)
