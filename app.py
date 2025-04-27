@@ -107,6 +107,7 @@ if page == "Estimator":
         rock_volume_cy = 0.0
         drain_fabric_lf = 0.0
         drain_pipe_lf = 0.0
+        thickness_ft = thickness_in / 12 if thickness_in > 0 else 0.0
 
     slab_area = area_override if area_override > 0 else length_ft * height_ft
 
