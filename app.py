@@ -203,6 +203,16 @@ if page == "Estimator":
         raw_total += concrete_cost + rebar_cost_total
         total_sale = raw_total * (1 + material_markup / 100)
 
+    # --- EXPANSION JOINT FOAM LOGIC ---
+expansion_joint_rolls = 0
+expansion_joint_cost = 0
+
+    if component in ["Interior Slab", "Garage Slab", "Exterior Flatwork"]:
+        perimeter_ft = (2 * length_ft) + (2 * height_ft)
+        expansion_joint_rolls = math.ceil(perimeter_ft / 45)
+        expansion_joint_cost = expansion_joint_rolls * 25
+        raw_total += expansion_joint_cost
+
     # --- RESULTS OUTPUT ---
     st.markdown("### Results")
     result = pd.DataFrame([{
