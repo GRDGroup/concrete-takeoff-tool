@@ -193,6 +193,36 @@ if page == "Materials Summary":
         st.metric("Total Sale Price", f"${round(sale_total,2):,}")
         st.metric("Profit Margin", f"${round(margin_amount,2):,} ({round(margin_percent,1)}%)")
 
+# --- NEW REBAR INPUTS BASED ON COMPONENT TYPE ---
+
+if component in ["Foundation Wall", "Interior Slab", "Garage Slab", "Exterior Flatwork"]:
+    st.markdown("### Rebar Details")
+
+    if component == "Foundation Wall":
+        wall_horizontal_spacing = st.number_input("Horizontal Rebar Spacing for Wall (inches)", min_value=1, value=18)
+        wall_vertical_spacing = st.number_input("Vertical Rebar Spacing for Wall (inches)", min_value=1, value=18)
+        wall_rebar_size = st.selectbox("Wall Rebar Size", ["#3", "#4", "#5", "#6"])
+
+    if component in ["Interior Slab", "Garage Slab", "Exterior Flatwork"]:
+        slab_horizontal_spacing = st.number_input("Horizontal Rebar Spacing for Flatwork (inches)", min_value=1, value=24)
+        slab_vertical_spacing = st.number_input("Vertical Rebar Spacing for Flatwork (inches)", min_value=1, value=24)
+        slab_rebar_size = st.selectbox("Flatwork Rebar Size", ["#3", "#4", "#5", "#6"])
+
+elif component == "Linear Footing":
+    st.markdown("### Footing Rebar Details")
+    footing_num_bars = st.number_input("Number of Bars in Footing", min_value=1, value=4)
+    footing_rebar_size = st.selectbox("Footing Rebar Size", ["#3", "#4", "#5", "#6"])
+
+else:
+    # Default values if not footing, wall, or flatwork
+    wall_horizontal_spacing = 18
+    wall_vertical_spacing = 18
+    wall_rebar_size = "#4"
+    footing_num_bars = 2
+    footing_rebar_size = "#4"
+    slab_horizontal_spacing = 24
+    slab_vertical_spacing = 24
+    slab_rebar_size = "#4"
 
 
 
