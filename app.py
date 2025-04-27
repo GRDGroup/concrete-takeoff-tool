@@ -24,7 +24,7 @@ qty = st.number_input("Quantity (if applicable)", min_value=1, value=1)
 include_overage = st.checkbox("Apply 10% overage for structural / 5% for slabs", value=True)
 include_xps = st.checkbox("Include XPS Foam for Component", value=False)
 xps_r_value = st.selectbox("XPS R-Value", ["R-5", "R-10"])
-xps_price = 1.41 if xps_r_value == "R-10" else 0.71
+xps_price = 3.00 if xps_r_value == "R-10" else 1.50
 
 # Pricing Inputs
 st.markdown("### Pricing")
