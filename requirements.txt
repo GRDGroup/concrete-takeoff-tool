@@ -60,12 +60,6 @@ if page == "Estimator":
         # Calculation block (coming next message!)
         pass
 # Main Calculation Logic
-if page == "Estimator" and st.session_state.get("takeoff_data") is None:
-    st.session_state.takeoff_data = pd.DataFrame()
-
-if page == "Estimator" and "Calculate" in st.session_state:
-    st.session_state.takeoff_data = pd.concat([st.session_state.takeoff_data, result], ignore_index=True)
-
 if page == "Estimator":
     if "takeoff_data" not in st.session_state:
         st.session_state.takeoff_data = pd.DataFrame()
@@ -77,6 +71,7 @@ if page == "Estimator":
         st.markdown("## Project Takeoff Summary")
         st.dataframe(st.session_state.takeoff_data)
         st.download_button("Download CSV", st.session_state.takeoff_data.to_csv(index=False), file_name="takeoff_dataset.csv")
+
 
 # 📋 MATERIALS SUMMARY TAB
 if page == "Materials Summary":
