@@ -43,32 +43,32 @@ include_overage = st.checkbox("Apply 10% overage for structural / 5% for slabs",
 wall_spacing_in = st.selectbox("Wall Rebar Spacing (in)", [12, 18, 24])
 slab_spacing_in = st.selectbox("Slab Rebar Spacing (in)", [12, 18, 24])
 
-    # XPS Foam
-        include_xps = st.checkbox("Include XPS Foam for Component", value=False)
-        xps_r_value = st.selectbox("XPS R-Value", ["R-5", "R-10"])
-        xps_price = 1.5 if xps_r_value == "R-5" else 3.0
+# XPS Foam
+include_xps = st.checkbox("Include XPS Foam for Component", value=False)
+xps_r_value = st.selectbox("XPS R-Value", ["R-5", "R-10"])
+xps_price = 1.5 if xps_r_value == "R-5" else 3.0
 
-    # Pricing Inputs
-        st.markdown("### Pricing")
-        concrete_zone = st.selectbox("Concrete Zone", ["Zone A - $185", "Zone B - $195", "Zone C - $205", "Zone D - $215"])
-        concrete_price_per_cy = int(concrete_zone.split("$")[-1])
-        rebar_price_per_ft = st.selectbox("Rebar Pricing", ["#4 - $0.45", "#5 - $0.55", "#6 - $0.60"])
-        rebar_cost = float(rebar_price_per_ft.split("$")[-1])
-        material_markup = st.slider("Material Markup %", min_value=0, max_value=50, value=25)
+# Pricing Inputs
+st.markdown("### Pricing")
+concrete_zone = st.selectbox("Concrete Zone", ["Zone A - $185", "Zone B - $195", "Zone C - $205", "Zone D - $215"])
+concrete_price_per_cy = int(concrete_zone.split("$")[-1])
+rebar_price_per_ft = st.selectbox("Rebar Pricing", ["#4 - $0.45", "#5 - $0.55", "#6 - $0.60"])
+rebar_cost = float(rebar_price_per_ft.split("$")[-1])
+material_markup = st.slider("Material Markup %", min_value=0, max_value=50, value=25)
 
-    finish_price = st.selectbox("Flatwork Finish Rate (per SF)", [
+finish_price = st.selectbox("Flatwork Finish Rate (per SF)", [
         "$8.25", "$8.50", "$8.75", "$9.00", "$9.25", "$9.50", "$10.00"
     ])
-    finish_rate = float(finish_price.replace("$", ""))
+finish_rate = float(finish_price.replace("$", ""))
 
-    vapor_options = {
-        "Stego 6 mil": 0.18,
-        "Stego 10 mil": 0.25,
-        "10 mil plastic": 0.12,
-        "5 mil plastic": 0.09
+vapor_options = {
+"Stego 6 mil": 0.18,
+"Stego 10 mil": 0.25,
+"10 mil plastic": 0.12,
+"5 mil plastic": 0.09
     }
-    vapor_type = st.selectbox("Vapor Barrier Type", list(vapor_options.keys()))
-    vapor_price = vapor_options[vapor_type]
+vapor_type = st.selectbox("Vapor Barrier Type", list(vapor_options.keys()))
+vapor_price = vapor_options[vapor_type]
 
     if st.button("Calculate"):
         thickness_ft = thickness_in / 12 if thickness_in > 0 else 0.0
