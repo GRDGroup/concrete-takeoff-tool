@@ -12,79 +12,103 @@ page = st.sidebar.selectbox("Select Page", ["Estimator", "Materials Summary"])
 if page == "Estimator":
     st.title("Concrete, Rebar, XPS, Drain & Finish Takeoff Tool")
 
-# Set defaults to prevent NameError
-wall_horizontal_spacing = 18
-wall_vertical_spacing = 18
-wall_rebar_size = "#4"
-slab_horizontal_spacing = 24
-slab_vertical_spacing = 24
-slab_rebar_size = "#4"
-footing_num_bars = 2
-footing_rebar_size = "#4"
+    # Set defaults
+    wall_horizontal_spacing = 18
+    wall_vertical_spacing = 18
+    wall_rebar_size = "#4"
+    slab_horizontal_spacing = 24
+    slab_vertical_spacing = 24
+    slab_rebar_size = "#4"
+    footing_num_bars = 2
+    footing_rebar_size = "#4"
 
-project_name = st.text_input("Project Name")
-estimator_name = st.text_input("Estimator")
+    # Inputs
+    project_name = st.text_input("Project Name")
+    estimator_name = st.text_input("Estimator")
 
-component = st.selectbox("Component Type", [
+    component = st.selectbox("Component Type", [
         "Foundation Wall", "Linear Footing", "Spread Footing",
         "Interior Slab", "Garage Slab", "Exterior Flatwork",
         "French Drain", "Big Foot Pier", "Sono Tube",
         "XPS Insulation", "Vapor Barrier", "Flatwork Finish", "Concrete Jump"
     ])
 
-length_ft = st.number_input("Length (ft)", min_value=0.0, value=0.0)
-height_ft = st.number_input("Height / Depth (ft)", min_value=0.0, value=0.0)
-thickness_in = st.number_input("Thickness (inches)", min_value=0.0, value=0.0)
-area_override = st.number_input("Square Footage Override (for slabs)", min_value=0.0, value=0.0)
-qty = st.number_input("Quantity (if applicable)", min_value=1, value=1)
-include_overage = st.checkbox("Apply 10% overage for structural / 5% for slabs", value=True)
+    length_ft = st.number_input("Length (ft)", min_value=0.0, value=0.0)
+    height_ft = st.number_input("Height / Depth (ft)", min_value=0.0, value=0.0)
+    thickness_in = st.number_input("Thickness (inches)", min_value=0.0, value=0.0)
+    area_override = st.number_input("Square Footage Override (for slabs)", min_value=0.0, value=0.0)
+    qty = st.number_input("Quantity (if applicable)", min_value=1, value=1)
+    include_overage = st.checkbox("Apply 10% overage for structural / 5% for slabs", value=True)
 
-# Rebar Spacing
-wall_spacing_in = st.selectbox("Wall Rebar Spacing (in)", [12, 18, 24])
-slab_spacing_in = st.selectbox("Slab Rebar Spacing (in)", [12, 18, 24])
+    # Rebar Spacing Inputs
+    st.markdown("### Rebar Spacing")
+    wall_spacing_in = st.selectbox("Wall Rebar Spacing (in)", [12, 18, 24])
+    slab_spacing_in = st.selectbox("Slab Rebar Spacing (in)", [12, 18, 24])
 
-# XPS Foam
-include_xps = st.checkbox("Include XPS Foam for Component", value=False)
-xps_r_value = st.selectbox("XPS R-Value", ["R-5", "R-10"])
-xps_price = 1.5 if xps_r_value == "R-5" else 3.0
+    # Rebar Detailed Inputs
+    if component in ["Foundation Wall", "Interior Slab", "Garage Slab", "Exterior Flatwork"]:
+        st.markdown("### Rebar Details")
 
-# Pricing Inputs
-st.markdown("### Pricing")
-concrete_zone = st.selectbox("Concrete Zone", ["Zone A - $185", "Zone B - $195", "Zone C - $205", "Zone D - $215"])
-concrete_price_per_cy = int(concrete_zone.split("$")[-1])
-rebar_price_per_ft = st.selectbox("Rebar Pricing", ["#4 - $0.45", "#5 - $0.55", "#6 - $0.60"])
-rebar_cost = float(rebar_price_per_ft.split("$")[-1])
-material_markup = st.slider("Material Markup %", min_value=0, max_value=50, value=25)
+        if component == "Foundation Wall":
+            wall_horizontal_spacing = st.number_input("Horizontal Rebar Spacing for Wall (inches)", min_value=1, value=18)
+            wall_vertical_spacing = st.number_input("Vertical Rebar Spacing for Wall (inches)", min_value=1, value=18)
+            wall_rebar_size = st.selectbox("Wall Rebar Size", ["#3", "#4", "#5", "#6"])
 
-finish_price = st.selectbox("Flatwork Finish Rate (per SF)", [
+        if component in ["Interior Slab", "Garage Slab", "Exterior Flatwork"]:
+            slab_horizontal_spacing = st.number_input("Horizontal Rebar Spacing for Flatwork (inches)", min_value=1, value=24)
+            slab_vertical_spacing = st.number_input("Vertical Rebar Spacing for Flatwork (inches)", min_value=1, value=24)
+            slab_rebar_size = st.selectbox("Flatwork Rebar Size", ["#3", "#4", "#5", "#6"])
+
+    elif component == "Linear Footing":
+        st.markdown("### Footing Rebar Details")
+        footing_num_bars = st.number_input("Number of Bars in Footing", min_value=1, value=4)
+        footing_rebar_size = st.selectbox("Footing Rebar Size", ["#3", "#4", "#5", "#6"])
+
+    # XPS Foam
+    include_xps = st.checkbox("Include XPS Foam for Component", value=False)
+    xps_r_value = st.selectbox("XPS R-Value", ["R-5", "R-10"])
+    xps_price = 1.5 if xps_r_value == "R-5" else 3.0
+
+    # Pricing Inputs
+    st.markdown("### Pricing")
+    concrete_zone = st.selectbox("Concrete Zone", ["Zone A - $185", "Zone B - $195", "Zone C - $205", "Zone D - $215"])
+    concrete_price_per_cy = int(concrete_zone.split("$")[-1])
+    rebar_price_per_ft = st.selectbox("Rebar Pricing", ["#4 - $0.45", "#5 - $0.55", "#6 - $0.60"])
+    rebar_cost = float(rebar_price_per_ft.split("$")[-1])
+    material_markup = st.slider("Material Markup %", min_value=0, max_value=50, value=25)
+
+    finish_price = st.selectbox("Flatwork Finish Rate (per SF)", [
         "$8.25", "$8.50", "$8.75", "$9.00", "$9.25", "$9.50", "$10.00"
     ])
-finish_rate = float(finish_price.replace("$", ""))
+    finish_rate = float(finish_price.replace("$", ""))
 
-vapor_options = {
-"Stego 6 mil": 0.18,
-"Stego 10 mil": 0.25,
-"10 mil plastic": 0.12,
-"5 mil plastic": 0.09
+    vapor_options = {
+        "Stego 6 mil": 0.18,
+        "Stego 10 mil": 0.25,
+        "10 mil plastic": 0.12,
+        "5 mil plastic": 0.09
     }
-vapor_type = st.selectbox("Vapor Barrier Type", list(vapor_options.keys()))
-vapor_price = vapor_options[vapor_type]
+    vapor_type = st.selectbox("Vapor Barrier Type", list(vapor_options.keys()))
+    vapor_price = vapor_options[vapor_type]
 
-if st.button("Calculate"):
-        thickness_ft = thickness_in / 12 if thickness_in > 0 else 0.0
-        volume_cy = 0.0
-        rebar_lf = 0.0
-        xps_sf = 0.0
-        xps_cost = 0.0
-        drain_cost = 0.0
-        vapor_cost = 0.0
-        finish_cost = 0.0
-        total_cost = 0.0
-        total_sale = 0.0
-        raw_total = 0.0
-        rock_volume_cy = 0.0
-        drain_fabric_lf = 0.0
-        drain_pipe_lf = 0.0
+    # Calculate Button
+    if st.button("Calculate"):
+        # 🧮 All your previous Calculate Logic goes here...
+        if st.button("Calculate"):
+    thickness_ft = thickness_in / 12 if thickness_in > 0 else 0.0
+    volume_cy = 0.0
+    rebar_lf = 0.0
+    xps_sf = 0.0
+    xps_cost = 0.0
+    drain_cost = 0.0
+    vapor_cost = 0.0
+    finish_cost = 0.0
+    total_cost = 0.0
+    total_sale = 0.0
+    raw_total = 0.0
+    rock_volume_cy = 0.0
+    drain_fabric_lf = 0.0
+    drain_pipe_lf = 0.0
 
     slab_area = area_override if area_override > 0 else length_ft * height_ft
 
@@ -200,6 +224,7 @@ if st.button("Calculate"):
 
     if "takeoff_data" not in st.session_state:
         st.session_state.takeoff_data = pd.DataFrame()
+
     st.session_state.takeoff_data = pd.concat([st.session_state.takeoff_data, result], ignore_index=True)
 
 
@@ -228,36 +253,6 @@ if page == "Materials Summary":
         st.metric("Total Sale Price", f"${round(sale_total,2):,}")
         st.metric("Profit Margin", f"${round(margin_amount,2):,} ({round(margin_percent,1)}%)")
 
-# --- NEW REBAR INPUTS BASED ON COMPONENT TYPE ---
-
-if component in ["Foundation Wall", "Interior Slab", "Garage Slab", "Exterior Flatwork"]:
-    st.markdown("### Rebar Details")
-
-    if component == "Foundation Wall":
-        wall_horizontal_spacing = st.number_input("Horizontal Rebar Spacing for Wall (inches)", min_value=1, value=18)
-        wall_vertical_spacing = st.number_input("Vertical Rebar Spacing for Wall (inches)", min_value=1, value=18)
-        wall_rebar_size = st.selectbox("Wall Rebar Size", ["#3", "#4", "#5", "#6"])
-
-    if component in ["Interior Slab", "Garage Slab", "Exterior Flatwork"]:
-        slab_horizontal_spacing = st.number_input("Horizontal Rebar Spacing for Flatwork (inches)", min_value=1, value=24)
-        slab_vertical_spacing = st.number_input("Vertical Rebar Spacing for Flatwork (inches)", min_value=1, value=24)
-        slab_rebar_size = st.selectbox("Flatwork Rebar Size", ["#3", "#4", "#5", "#6"])
-
-elif component == "Linear Footing":
-    st.markdown("### Footing Rebar Details")
-    footing_num_bars = st.number_input("Number of Bars in Footing", min_value=1, value=4)
-    footing_rebar_size = st.selectbox("Footing Rebar Size", ["#3", "#4", "#5", "#6"])
-
-else:
-    # Default values if not footing, wall, or flatwork
-    wall_horizontal_spacing = 18
-    wall_vertical_spacing = 18
-    wall_rebar_size = "#4"
-    footing_num_bars = 2
-    footing_rebar_size = "#4"
-    slab_horizontal_spacing = 24
-    slab_vertical_spacing = 24
-    slab_rebar_size = "#4"
 
 
 
