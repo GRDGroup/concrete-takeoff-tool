@@ -1,3 +1,7 @@
-streamlit
-pandas
-matplotlib
+import streamlit as st
+import pandas as pd
+import math
+import matplotlib.pyplot as plt
+
+# Sidebar Navigation
+page = st.sidebar.selectbox("Select Page", ["Estimator", "Materials Summary"])
