@@ -96,19 +96,19 @@ if page == "Estimator":
         # 🧮 All your previous Calculate Logic goes here...
         if st.button("Calculate"):
         thickness_ft = thickness_in / 12 if thickness_in > 0 else 0.0
-    volume_cy = 0.0
-    rebar_lf = 0.0
-    xps_sf = 0.0
-    xps_cost = 0.0
-    drain_cost = 0.0
-    vapor_cost = 0.0
-    finish_cost = 0.0
-    total_cost = 0.0
-    total_sale = 0.0
-    raw_total = 0.0
-    rock_volume_cy = 0.0
-    drain_fabric_lf = 0.0
-    drain_pipe_lf = 0.0
+        volume_cy = 0.0
+        rebar_lf = 0.0
+        xps_sf = 0.0
+        xps_cost = 0.0
+        drain_cost = 0.0
+        vapor_cost = 0.0
+        finish_cost = 0.0
+        total_cost = 0.0
+        total_sale = 0.0
+        raw_total = 0.0
+        rock_volume_cy = 0.0
+        drain_fabric_lf = 0.0
+        drain_pipe_lf = 0.0
 
     slab_area = area_override if area_override > 0 else length_ft * height_ft
 
