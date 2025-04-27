@@ -78,6 +78,55 @@ if page == "Estimator":
 
         slab_area = area_override if area_override > 0 else length_ft * height_ft
 
+        # --- REBAR LENGTH CALCULATIONS BASED ON COMPONENT TYPE ---
+
+# Conversion for spacing (inches to feet)
+spacing_wall_h_ft = wall_horizontal_spacing / 12
+spacing_wall_v_ft = wall_vertical_spacing / 12
+spacing_slab_h_ft = slab_horizontal_spacing / 12
+spacing_slab_v_ft = slab_vertical_spacing / 12
+
+# Weight per foot by rebar size (for future tie wire calc)
+rebar_weights = {
+    "#3": 0.376,
+    "#4": 0.668,
+    "#5": 1.043,
+    "#6": 1.502
+}
+
+# Start calculations
+if component == "Foundation Wall":
+    horiz_bars = math.ceil(length_ft / spacing_wall_h_ft)
+    vert_bars = math.ceil(height_ft / spacing_wall_v_ft)
+    total_bars = horiz_bars + vert_bars
+
+    # Add overlaps
+    overlap_ft = (total_bars * (24 / 12))  # 24\" overlap each straight bar
+    corner_overlap_ft = 4 * (18 / 12)      # 18\" each direction per corner
+
+    rebar_lf = (horiz_bars * length_ft) + (vert_bars * height_ft) + overlap_ft + corner_overlap_ft
+
+elif component in ["Interior Slab", "Garage Slab", "Exterior Flatwork"]:
+    horiz_bars = math.ceil(length_ft / spacing_slab_h_ft)
+    vert_bars = math.ceil(height_ft / spacing_slab_v_ft)
+    total_bars = horiz_bars + vert_bars
+
+    # Add overlaps
+    overlap_ft = (total_bars * (24 / 12))  # 24\" straight laps
+    corner_overlap_ft = 4 * (18 / 12)      # 18\" at each corner
+
+    rebar_lf = (horiz_bars * length_ft) + (vert_bars * height_ft) + overlap_ft + corner_overlap_ft
+
+elif component == "Linear Footing":
+    # Footing bars x footing length
+    rebar_lf = footing_num_bars * length_ft
+    overlap_ft = footing_num_bars * (24 / 12)
+    rebar_lf += overlap_ft
+
+else:
+    rebar_lf = 0
+
+
         # Core Calculations
         if component in ["Foundation Wall", "Interior Slab", "Garage Slab"]:
             volume_cy = (slab_area * thickness_ft) / 27
