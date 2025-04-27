@@ -33,11 +33,11 @@ component = st.selectbox("Component Type", [
     ])
 
 length_ft = st.number_input("Length (ft)", min_value=0.0, value=0.0)
-    height_ft = st.number_input("Height / Depth (ft)", min_value=0.0, value=0.0)
-    thickness_in = st.number_input("Thickness (inches)", min_value=0.0, value=0.0)
-    area_override = st.number_input("Square Footage Override (for slabs)", min_value=0.0, value=0.0)
-    qty = st.number_input("Quantity (if applicable)", min_value=1, value=1)
-    include_overage = st.checkbox("Apply 10% overage for structural / 5% for slabs", value=True)
+height_ft = st.number_input("Height / Depth (ft)", min_value=0.0, value=0.0)
+thickness_in = st.number_input("Thickness (inches)", min_value=0.0, value=0.0)
+area_override = st.number_input("Square Footage Override (for slabs)", min_value=0.0, value=0.0)
+qty = st.number_input("Quantity (if applicable)", min_value=1, value=1)
+include_overage = st.checkbox("Apply 10% overage for structural / 5% for slabs", value=True)
 
     # Rebar Spacing
     wall_spacing_in = st.selectbox("Wall Rebar Spacing (in)", [12, 18, 24])
