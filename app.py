@@ -32,7 +32,7 @@ component = st.selectbox("Component Type", [
         "XPS Insulation", "Vapor Barrier", "Flatwork Finish", "Concrete Jump"
     ])
 
-    length_ft = st.number_input("Length (ft)", min_value=0.0, value=0.0)
+length_ft = st.number_input("Length (ft)", min_value=0.0, value=0.0)
     height_ft = st.number_input("Height / Depth (ft)", min_value=0.0, value=0.0)
     thickness_in = st.number_input("Thickness (inches)", min_value=0.0, value=0.0)
     area_override = st.number_input("Square Footage Override (for slabs)", min_value=0.0, value=0.0)
