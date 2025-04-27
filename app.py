@@ -22,8 +22,8 @@ slab_rebar_size = "#4"
 footing_num_bars = 2
 footing_rebar_size = "#4"
 
-    project_name = st.text_input("Project Name")
-    estimator_name = st.text_input("Estimator")
+project_name = st.text_input("Project Name")
+estimator_name = st.text_input("Estimator")
 
     component = st.selectbox("Component Type", [
         "Foundation Wall", "Linear Footing", "Spread Footing",
