@@ -41,13 +41,14 @@ if page == "Estimator":
     include_overage = st.checkbox("Apply 10% overage for structural / 5% for slabs", value=True)
 
     # Rebar Spacing Inputs
-    st.markdown("### Rebar Spacing")
-    wall_spacing_in = st.selectbox("Wall Rebar Spacing (in)", [12, 18, 24])
-    slab_spacing_in = st.selectbox("Slab Rebar Spacing (in)", [12, 18, 24])
+    st.markdown("### General Rebar Spacing Setup (Default if Plan Not Specific)")
+    wall_spacing_in = st.selectbox("Default Wall Rebar Spacing (inches)", [12, 18, 24])
+    slab_spacing_in = st.selectbox("Default Slab Rebar Spacing (inches)", [12, 18, 24])
+
 
     # Detailed Rebar Inputs
     if component in ["Foundation Wall", "Interior Slab", "Garage Slab", "Exterior Flatwork"]:
-        st.markdown("### Rebar Details")
+        st.markdown("### Specific Rebar Layout by Component (Per Engineering or Plan)")
         if component == "Foundation Wall":
             wall_horizontal_spacing = st.number_input("Horizontal Rebar Spacing for Wall (inches)", min_value=1, value=18)
             wall_vertical_spacing = st.number_input("Vertical Rebar Spacing for Wall (inches)", min_value=1, value=18)
